@@ -50,7 +50,10 @@ void OLED_SendBytes(uint8_t Byt){
 		OLED_SCL(0);
 		Delay_us(5);
 	}
+	
+	OLED_SDA(1);
 	OLED_SCL(1);
+	/*ack*/
 	Delay_us(5);
 	OLED_SCL(0);
 
@@ -118,6 +121,9 @@ void OLED_Init(){
 	
 	OLED_WriteCommand(0X8D); 
 	OLED_WriteCommand(0X14); //Charge Pump
+	
+	OLED_WriteCommand(0xA1); //from left
+	OLED_WriteCommand(0xC8); //from top
 	
 	OLED_WriteCommand(0XAF); //Display on
 	OLED_Clear();

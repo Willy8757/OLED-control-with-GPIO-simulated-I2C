@@ -5,6 +5,7 @@
 #define OLED_SCL(x)		GPIO_WriteBit(GPIOB, GPIO_Pin_8, (BitAction)(x))
 #define OLED_SDA(x)		GPIO_WriteBit(GPIOB, GPIO_Pin_9, (BitAction)(x))
 
+
 void OLED_I2C_Init(void){
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 	
@@ -19,6 +20,7 @@ void OLED_I2C_Init(void){
 	OLED_SCL(1);
 	OLED_SDA(1);
 }
+
 
 
 void OLED_I2C_start(){
@@ -53,6 +55,76 @@ void OLED_SendBytes(uint8_t Byt){
 	OLED_SCL(0);
 
 }
+
+void OLED_WriteData(uint8_t Data){
+
+	OLED_I2C_start();
+	OLED_SendBytes(0x78); /*address of SSD1306 is 0x3C, but the last bit in I2C denote receive of send data, so 0x3C << 1 = 0011 1100 << 1 = 0111 1000
+							and set last bit as 0(write data) -> 0x78*/
+	OLED_SendBytes(0x40); //0x40 : send data, 0x00 : send command
+	OLED_SendBytes(Data);
+	OLED_I2C_stop();
+
+}
+
+void OLED_WriteCommand(uint8_t Command){
+	
+	OLED_I2C_start();
+	OLED_SendBytes(0x78);
+	OLED_SendBytes(0x00); //command
+	OLED_SendBytes(Command);
+	OLED_I2C_stop();
+
+}
+
+void OLED_SetCursor(uint8_t Page, uint8_t y){
+	
+	OLED_WriteCommand(0xB0 | Page); //0xB? : command to set page
+	OLED_WriteCommand(0x10 | y >> 4); //0x1? : command to set 4-bit high
+	OLED_WriteCommand(0x00 | y); //0x0?: command to set 4-bit low
+}
+
+
+void OLED_ShowChar(uint8_t x, uint8_t y, char c){
+	OLED_SetCursor((x - 1) * 2 , (y - 1) * 8); /*size of char on OLED is 8 * 16, but only 8 pixel each page and 8 pixel each row
+												 so first char use page0, 1, the next one use page2, 3, ...etc	*/
+	for(uint8_t i = 0; i < 8; i++){
+		OLED_WriteData(OLED_F8x16[c - ' '][i]);
+	}
+	
+	OLED_SetCursor((x - 1) * 2 + 1, ((y - 1) * 8));
+	
+	for (uint8_t i = 0; i < 8; i++){
+		OLED_WriteData(OLED_F8x16[c - ' '][i + 8]);		
+	}
+
+}
+
+void OLED_Clear(){
+	for(uint8_t i = 0; i < 8; i++){
+		OLED_SetCursor(i, 0);
+		for(uint8_t j = 0; j < 128; j++){
+			OLED_WriteData(0x00);
+		}
+	}
+}
+
+void OLED_Init(){
+	
+	Delay_us(10);
+	OLED_I2C_Init();
+	
+	OLED_WriteCommand(0XAE); //Display off
+	
+	OLED_WriteCommand(0X8D); 
+	OLED_WriteCommand(0X14); //Charge Pump
+	
+	OLED_WriteCommand(0XAF); //Display on
+	OLED_Clear();
+
+}
+
+
 
 
 

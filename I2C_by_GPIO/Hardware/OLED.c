@@ -89,7 +89,7 @@ void OLED_SetCursor(uint8_t Page, uint8_t y){
 
 
 void OLED_ShowChar(uint8_t x, uint8_t y, char c){
-	OLED_SetCursor((x - 1) * 2 , (y - 1) * 8); /*size of char on OLED is 8 * 16, but only 8 pixel each page and 8 pixel each row
+	OLED_SetCursor((x - 1) * 2 , (y - 1) * 8); /*size of char on OLED is 16*8, but only 8 pixel each page and 8 pixel each row
 												 so first char use page0, 1, the next one use page2, 3, ...etc	*/
 	for(uint8_t i = 0; i < 8; i++){
 		OLED_WriteData(OLED_F8x16[c - ' '][i]);
